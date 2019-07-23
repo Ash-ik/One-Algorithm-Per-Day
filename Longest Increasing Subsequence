@@ -1,0 +1,137 @@
+//  Longest Increasing Subsequence
+//
+//  Created by Fahim Al Mahmud on 23/7/19.
+//  Copyright © 2019 Fahim Al Mahmud. All rights reserved.
+//
+
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+void print_lis(int LIS[], int lis_length) {
+    
+    cout<<"Maximum length of the LIS of the given array is: "<<lis_length<<endl;
+    
+    cout<<"Your LIS:";
+    
+    for(int i=0;i<lis_length;i++) {
+        cout<<" "<<LIS[i];
+    }
+    cout<<endl;
+}
+
+
+//Using Binary Search to find LIS. This approach has O(nlogn) time complexity
+void LIS_binary_search(int arr[], int number_of_elements) {
+    
+    int *parent = new int[number_of_elements]; //Tracking the predecessors/parents of elements of each subsequence.
+    int *increasingSub= new int[number_of_elements]; //Tracking ends of each increasing subsequence.
+    int length = 0; //Length of longest subsequence.
+    
+    for(int i=0; i<number_of_elements; i++)
+    {
+        //Binary search
+        int low = 1;
+        int high = length;
+        while(low <= high)
+        {
+            int mid = (int) ceil((low + high)/2);
+            
+            if(arr[increasingSub[mid]] < arr[i])
+                low = mid + 1;
+            else
+                high = mid - 1;
+        }
+        
+        int pos = low;
+        //update parent/previous element for LIS
+        parent[i] = increasingSub[pos-1];
+        //Replace or append
+        increasingSub[pos] =  i;
+        
+        //Update the length of the longest subsequence.
+        if(pos > length)
+            length=pos;
+    }
+    
+    //Generate LIS by traversing parent array
+    int *lis = new int[length];
+    int k = increasingSub[length];
+    for(int j=length-1; j>=0; j--)
+    {
+        lis[j] = arr[k];
+        k = parent[k];
+    }
+    
+    //just print the lis array
+    print_lis(lis, length);
+}
+
+
+//Using Dynamic Programming to find LIS. This approach has O(n^2) time complexity
+void LIS_dp(int arr[], int number_of_elements) {
+    
+    //create an array named dp. this array's ith index will contain the length of LIS of arr[0---i]
+    int dp[number_of_elements], ans = 1;
+    
+    //create an array named LIS that holds our desired LIS, and lis_length is it's length
+    int LIS[number_of_elements], lis_length = 0;
+    
+    //setting all the elements in dp array 1, because a LIS of 1 element array is 1
+    for(int i=0;i<number_of_elements;i++) dp[i] = 1;
+    
+    
+    //  Let arr[0..n-1] be the input array and dp[i] be the length of the LIS ending
+    //  at index i such that arr[i] is the last element of the LIS.
+    //  then dp[i] = 1 + max( dp[j] ) where 0 < j < i and arr[j] < arr[i]
+    
+    for(int i=0;i<number_of_elements;i++) {
+        for(int j=0;j<i;j++) {
+            if(arr[i]>arr[j] && dp[i]<dp[j]+1) {
+                dp[i] = dp[j]+1;
+                if(ans<dp[i]) {
+                    ans = dp[i];
+                }
+            }
+        }
+    }
+    
+    //construct the LIS array from dp table
+    
+    for(int i = number_of_elements-1, temp = ans; i>=0;i--) {
+        if(dp[i] == ans) {
+            LIS[lis_length++] = arr[i];
+            ans--;
+        }
+    }
+    //as we collected the elements of LIS from top to bottom, we need to reverse it to get our desired result
+    reverse(LIS, LIS + lis_length);
+    
+    //just print the LIS array
+    print_lis(LIS,lis_length);
+    
+}
+
+int main() {
+    
+//    sample input
+//    8
+//    1 5 7 9 2 4 8 10
+    
+    int n, arr[1000] = {};
+    
+    // Taking all input in an array
+    cin>>n;
+    for(int i=0;i<n;i++) {
+        cin>>arr[i];
+    }
+    
+    //Using Dynamic Programming to find LIS. This approach has O(n^2) time complexity
+    //LIS_dp(arr, n);
+    
+    //Using Binary Search to find LIS. This approach has O(nlogn) time complexity
+    LIS_binary_search(arr, n);
+    
+    return 0;
+}
